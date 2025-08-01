@@ -1,4 +1,4 @@
-FROM python:3.9-slim-buster as build
+FROM python:3.9-slim-bullseye as build
 
 WORKDIR /opt/CTFd
 
@@ -9,6 +9,9 @@ RUN apt-get update \
         libffi-dev \
         libssl-dev \
         git \
+        pkg-config \
+        libev-dev \
+        python3-dev \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
     && python -m venv /opt/venv
@@ -25,14 +28,15 @@ RUN pip install --no-cache-dir -r requirements.txt \
     done;
 
 
-FROM python:3.9-slim-buster as release
+FROM python:3.9-slim-bullseye as release
 WORKDIR /opt/CTFd
 
 # hadolint ignore=DL3008
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-        libffi6 \
+        libffi7 \
         libssl1.1 \
+        libev4 \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
