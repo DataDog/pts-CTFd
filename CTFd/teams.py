@@ -158,6 +158,8 @@ def join():
 
         if team and verify_password(passphrase, team.password):
             team_size_limit = get_config("team_size", default=0)
+            # Refresh team object to ensure members are up-to-date
+            db.session.refresh(team)
             if team_size_limit and len(team.members) >= team_size_limit:
                 errors.append(
                     "{name} has already reached the team size limit of {limit}".format(
