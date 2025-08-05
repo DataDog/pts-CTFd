@@ -43,7 +43,7 @@ submissions_namespace.schema_model(
 
 @submissions_namespace.route("")
 class SubmissionsList(Resource):
-    #@admins_only
+    @admins_only
     @submissions_namespace.doc(
         description="Endpoint to get submission objects in bulk",
         responses={
@@ -151,7 +151,7 @@ class SubmissionsList(Resource):
 @submissions_namespace.route("/<submission_id>")
 @submissions_namespace.param("submission_id", "A Submission ID")
 class Submission(Resource):
-    #@admins_only
+    @admins_only
     @submissions_namespace.doc(
         description="Endpoint to get a submission object",
         responses={
