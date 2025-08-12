@@ -99,6 +99,10 @@ def test_hidden_teams_visibility():
                 r = admin.patch(f"/api/v1/teams/{team_id}", json={"hidden": False})
                 assert r.status_code == 200
 
+            # Refresh the team object to ensure database changes are reflected
+            app.db.session.refresh(team)
+            assert team.hidden is False  # Verify the team is actually unhidden
+
             r = client.get("/teams")
             response = r.get_data(as_text=True)
             assert team_name in response
