@@ -152,10 +152,10 @@ def test_teams_id_get():
         team.members.append(user)
         user.team_id = team.id
         app.db.session.commit()
+        # Capture the team id now and avoid accessing ORM instances later
+        team_id = team.id
         with login_as_user(app, name="user_name", password="password") as client:
-            # Re-fetch the team to ensure it's bound to the current session
-            team2 = Teams.query.filter_by(id=team.id).first()
-            r = client.get(f"/teams/{team2.id}")
+            r = client.get(f"/teams/{team_id}")
             assert r.status_code == 200
     destroy_ctfd(app)
 
