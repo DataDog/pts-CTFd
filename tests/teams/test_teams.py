@@ -99,8 +99,8 @@ def test_hidden_teams_visibility():
                 r = admin.patch(f"/api/v1/teams/{team_id}", json={"hidden": False})
                 assert r.status_code == 200
 
-            # Refresh the team object to ensure database changes are reflected
-            app.db.session.refresh(team)
+            # Re-fetch team from the database to avoid detached instance issues
+            team = Teams.query.filter_by(id=team_id).first()
             assert team.hidden is False  # Verify the team is actually unhidden
 
             r = client.get("/teams")
@@ -153,7 +153,9 @@ def test_teams_id_get():
         user.team_id = team.id
         app.db.session.commit()
         with login_as_user(app, name="user_name", password="password") as client:
-            r = client.get(f"/teams/{team.id}")
+            # Re-fetch the team to ensure it's bound to the current session
+            team2 = Teams.query.filter_by(id=team.id).first()
+            r = client.get(f"/teams/{team2.id}")
             assert r.status_code == 200
     destroy_ctfd(app)
 
