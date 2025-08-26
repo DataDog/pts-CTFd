@@ -41,7 +41,7 @@ def load(app: Flask):
 
             message = (
                 f"source=ctfd, event={ctfd_config.ctf_name()},type=hint,success={result.json['success']},"
-                f"challenge={challenge.name},category='{challenge.category}',team={team.name},"
+                f"challenge={challenge.name},category='{challenge.category}',team={(team.name if team else 'N/A')},"
                 f"user={user.name},points={hint.cost * -1},"
                 f"msg=Player {user.name} just traded {hint.cost} points for a hint on challenge {challenge.name}"
             )
@@ -72,8 +72,8 @@ def load(app: Flask):
             if result.json["data"]["status"] == "incorrect":
                 message = (
                     f"source=ctfd, event={ctfd_config.ctf_name()},type=challenge,status=incorrect,"
-                    f"challenge='{challenge.name}',category={challenge.category},team={team.name},"
-                    f"user={user.name},points=0,msg='Team {team.name} provided an incorrect answer "
+                    f"challenge='{challenge.name}',category={challenge.category},team={(team.name if team else 'N/A')},"
+                    f"user={user.name},points=0,msg='Team {(team.name if team else 'N/A')} provided an incorrect answer "
                     f"for challenge {challenge.name}'"
                 )
                 log("submissions", message)
@@ -85,9 +85,9 @@ def load(app: Flask):
 
                 message = (
                     f"source=ctfd, event={ctfd_config.ctf_name()},type=challenge,status=correct,"
-                    f"challenge='{challenge.name}',category={challenge.category},team={team.name},"
+                    f"challenge='{challenge.name}',category={challenge.category},team={(team.name if team else 'N/A')},"
                     f"user={user.name},points={challenge.value},"
-                    f"msg='Team {team.name} is the {num_solves} to solve challenge {challenge.name}'"
+                    f"msg='Team {(team.name if team else 'N/A')} is the {num_solves} to solve challenge {challenge.name}'"
                 )
                 log("submissions", message)
 
