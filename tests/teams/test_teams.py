@@ -44,11 +44,11 @@ def test_accessing_hidden_teams():
             user.team_id = team.id
             app.db.session.commit()
 
-            assert client.get("/teams/1").status_code == 404
-            assert client.get("/api/v1/teams/1").status_code == 404
-            assert client.get("/api/v1/teams/1/solves").status_code == 404
-            assert client.get("/api/v1/teams/1/fails").status_code == 404
-            assert client.get("/api/v1/teams/1/awards").status_code == 404
+            assert client.get(f"/teams/{team.id}").status_code == 404
+            assert client.get(f"/api/v1/teams/{team.id}").status_code == 404
+            assert client.get(f"/api/v1/teams/{team.id}/solves").status_code == 404
+            assert client.get(f"/api/v1/teams/{team.id}/fails").status_code == 404
+            assert client.get(f"/api/v1/teams/{team.id}/awards").status_code == 404
     destroy_ctfd(app)
 
 
@@ -96,8 +96,12 @@ def test_hidden_teams_visibility():
             # Team should re-appear after disabling hiding
             # Use an API call to cause a cache clear
             with login_as_user(app, name="admin") as admin:
-                r = admin.patch("/api/v1/teams/1", json={"hidden": False})
+                r = admin.patch(f"/api/v1/teams/{team_id}", json={"hidden": False})
                 assert r.status_code == 200
+
+            # Re-fetch team from the database to avoid detached instance issues
+            team = Teams.query.filter_by(id=team_id).first()
+            assert team.hidden is False  # Verify the team is actually unhidden
 
             r = client.get("/teams")
             response = r.get_data(as_text=True)
@@ -148,8 +152,10 @@ def test_teams_id_get():
         team.members.append(user)
         user.team_id = team.id
         app.db.session.commit()
+        # Capture the team id now and avoid accessing ORM instances later
+        team_id = team.id
         with login_as_user(app, name="user_name", password="password") as client:
-            r = client.get("/teams/1")
+            r = client.get(f"/teams/{team_id}")
             assert r.status_code == 200
     destroy_ctfd(app)
 

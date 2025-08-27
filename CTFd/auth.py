@@ -203,6 +203,14 @@ def register():
         email_address = request.form.get("email", "").strip().lower()
         password = request.form.get("password", "").strip()
         auto_register_team = request.form.get("auto_register_team", default=False)
+        # Coerce potential string form values to a real boolean
+        if isinstance(auto_register_team, str):
+            auto_register_team = auto_register_team.strip().lower() in (
+                "1",
+                "true",
+                "on",
+                "yes",
+            )
 
         website = request.form.get("website")
         affiliation = request.form.get("affiliation")
