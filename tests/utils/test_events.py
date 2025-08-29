@@ -12,7 +12,7 @@ from tests.helpers import create_ctfd, destroy_ctfd, login_as_user, register_use
 def test_event_manager_installed():
     """Test that EventManager is installed on the Flask app"""
     app = create_ctfd()
-    assert type(app.events_manager) == EventManager
+    assert isinstance(app.events_manager, EventManager)
     destroy_ctfd(app)
 
 

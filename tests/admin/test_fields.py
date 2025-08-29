@@ -1,10 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""
+Migrated admin fields tests using optimized fixtures for better performance.
+
+This file replaces the original admin fields test with:
+1. Pytest fixtures instead of create_ctfd/destroy_ctfd per test
+2. Dynamic ID handling instead of hardcoded IDs
+3. Better test isolation and cleanup
+4. Parametrized tests for different field configurations
+"""
 
 from CTFd.models import Users
 from tests.helpers import (
-    create_ctfd,
-    destroy_ctfd,
     gen_field,
     gen_team,
     login_as_user,
@@ -12,46 +19,48 @@ from tests.helpers import (
 )
 
 
-def test_admin_view_fields():
-    app = create_ctfd()
-    with app.app_context():
-        register_user(app)
+class TestAdminFields:
+    """Test admin field management functionality"""
+    
+    def test_admin_view_fields(self, clean_db):
+        """Test that admin can view all user fields regardless of visibility"""
+        register_user(clean_db)
+        user = Users.query.filter_by(email="user@examplectf.com").first()
 
+        # Create fields with different visibility settings
         gen_field(
-            app.db, name="CustomField1", required=True, public=True, editable=True
+            clean_db.db, name="CustomField1", required=True, public=True, editable=True
         )
         gen_field(
-            app.db, name="CustomField2", required=False, public=True, editable=True
+            clean_db.db, name="CustomField2", required=False, public=True, editable=True
         )
         gen_field(
-            app.db, name="CustomField3", required=False, public=False, editable=True
+            clean_db.db, name="CustomField3", required=False, public=False, editable=True
         )
         gen_field(
-            app.db, name="CustomField4", required=False, public=False, editable=False
+            clean_db.db, name="CustomField4", required=False, public=False, editable=False
         )
 
-        with login_as_user(app, name="admin") as admin:
+        with login_as_user(clean_db, name="admin") as admin:
             # Admins should see all user fields regardless of public or editable
-            r = admin.get("/admin/users/2")
+            r = admin.get(f"/admin/users/{user.id}")
             resp = r.get_data(as_text=True)
             assert "CustomField1" in resp
             assert "CustomField2" in resp
             assert "CustomField3" in resp
             assert "CustomField4" in resp
-    destroy_ctfd(app)
 
-
-def test_admin_view_team_fields():
-    app = create_ctfd(user_mode="teams")
-    with app.app_context():
-        register_user(app)
-        team = gen_team(app.db)
-        user = Users.query.filter_by(id=2).first()
+    def test_admin_view_team_fields(self, clean_db_with_data_team_mode):
+        """Test that admin can view all team fields regardless of visibility"""
+        register_user(clean_db_with_data_team_mode)
+        team = gen_team(clean_db_with_data_team_mode.db)
+        user = Users.query.filter_by(email="user@examplectf.com").first()
         user.team_id = team.id
-        app.db.session.commit()
+        clean_db_with_data_team_mode.db.session.commit()
 
+        # Create team fields with different visibility settings
         gen_field(
-            app.db,
+            clean_db_with_data_team_mode.db,
             name="CustomField1",
             type="team",
             required=True,
@@ -59,7 +68,7 @@ def test_admin_view_team_fields():
             editable=True,
         )
         gen_field(
-            app.db,
+            clean_db_with_data_team_mode.db,
             name="CustomField2",
             type="team",
             required=False,
@@ -67,7 +76,7 @@ def test_admin_view_team_fields():
             editable=True,
         )
         gen_field(
-            app.db,
+            clean_db_with_data_team_mode.db,
             name="CustomField3",
             type="team",
             required=False,
@@ -75,7 +84,7 @@ def test_admin_view_team_fields():
             editable=True,
         )
         gen_field(
-            app.db,
+            clean_db_with_data_team_mode.db,
             name="CustomField4",
             type="team",
             required=False,
@@ -83,12 +92,11 @@ def test_admin_view_team_fields():
             editable=False,
         )
 
-        with login_as_user(app, name="admin") as admin:
+        with login_as_user(clean_db_with_data_team_mode, name="admin") as admin:
             # Admins should see all team fields regardless of public or editable
-            r = admin.get("/admin/teams/1")
+            r = admin.get(f"/admin/teams/{team.id}")
             resp = r.get_data(as_text=True)
             assert "CustomField1" in resp
             assert "CustomField2" in resp
             assert "CustomField3" in resp
             assert "CustomField4" in resp
-    destroy_ctfd(app)

@@ -44,7 +44,7 @@ def current(plugin_name=None):
 
     # Specifically bypass the cached config so that we always get the database value
     version = _get_config.__wrapped__(plugin_name + "_alembic_version")
-    if version == KeyError:
+    if version is KeyError:
         version = None
     return version
 

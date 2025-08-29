@@ -10,7 +10,7 @@ def build_model_filters(model, query, field, extra_columns=None):
         if model.__mapper__.has_property(field):
             column = getattr(model, field)
 
-            if type(column.type) == sqlalchemy.sql.sqltypes.Integer:
+            if isinstance(column.type, sqlalchemy.sql.sqltypes.Integer):
                 _filter = column.op("=")(query)
             else:
                 _filter = column.like(f"%{query}%")
@@ -18,7 +18,7 @@ def build_model_filters(model, query, field, extra_columns=None):
         else:
             if field in extra_columns:
                 column = extra_columns[field]
-                if type(column.type) == sqlalchemy.sql.sqltypes.Integer:
+                if isinstance(column.type, sqlalchemy.sql.sqltypes.Integer):
                     _filter = column.op("=")(query)
                 else:
                     _filter = column.like(f"%{query}%")

@@ -309,9 +309,9 @@ def import_ctf(backup, erase=True):
                                 if isinstance(v, string_types):
                                     # We only want to apply this hack to columns that are expecting a datetime object
                                     try:
-                                        is_dt_column = (
-                                            type(getattr(direct_table, k).type)
-                                            == sqltypes.DateTime
+                                        is_dt_column = isinstance(
+                                            getattr(direct_table, k).type,
+                                            sqltypes.DateTime,
                                         )
                                     except AttributeError:
                                         is_dt_column = False

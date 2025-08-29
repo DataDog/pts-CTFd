@@ -259,23 +259,22 @@ def test_api_team_self_fields_permissions():
     with app.app_context():
         register_user(app)
         team = gen_team(app.db)
-        user = Users.query.filter_by(id=2).first()
+        user = Users.query.filter_by(email="user@examplectf.com").first()
         user.team_id = team.id
         app.db.session.commit()
-        team = Teams.query.filter_by(id=1).first()
-        team.captain_id = 2
+        team.captain_id = user.id
         app.db.session.commit()
 
-        gen_field(
+        field1 = gen_field(
             app.db, name="CustomField1", type="team", public=False, editable=False
         )
-        gen_field(app.db, name="CustomField2", type="team", public=True, editable=True)
+        field2 = gen_field(app.db, name="CustomField2", type="team", public=True, editable=True)
 
         app.db.session.add(
-            TeamFieldEntries(type="team", value="CustomValue1", team_id=1, field_id=1)
+            TeamFieldEntries(type="team", value="CustomValue1", team_id=team.id, field_id=field1.id)
         )
         app.db.session.add(
-            TeamFieldEntries(type="team", value="CustomValue2", team_id=1, field_id=2)
+            TeamFieldEntries(type="team", value="CustomValue2", team_id=team.id, field_id=field2.id)
         )
         app.db.session.commit()
 
@@ -290,13 +289,13 @@ def test_api_team_self_fields_permissions():
                     "name": "CustomField2",
                     "description": "CustomFieldDescription",
                     "type": "text",
-                    "field_id": 2,
+                    "field_id": field2.id,
                 }
             ]
             assert len(resp["data"]["fields"]) == 1
 
             # Admin gets data and should see all fields
-            r = admin.get("/api/v1/teams/1")
+            r = admin.get(f"/api/v1/teams/{team.id}")
             resp = r.get_json()
             assert len(resp["data"]["fields"]) == 2
 
@@ -304,8 +303,8 @@ def test_api_team_self_fields_permissions():
                 "/api/v1/teams/me",
                 json={
                     "fields": [
-                        {"field_id": 1, "value": "NewCustomValue1"},
-                        {"field_id": 2, "value": "NewCustomValue2"},
+                        {"field_id": field1.id, "value": "NewCustomValue1"},
+                        {"field_id": field2.id, "value": "NewCustomValue2"},
                     ]
                 },
             )
@@ -314,44 +313,36 @@ def test_api_team_self_fields_permissions():
                 "errors": {"fields": ["Field 'CustomField1' cannot be editted"]},
             }
             assert r.status_code == 400
-            assert (
-                TeamFieldEntries.query.filter_by(id=1).first().value == "CustomValue1"
-            )
-            assert (
-                TeamFieldEntries.query.filter_by(id=2).first().value == "CustomValue2"
-            )
+            field_entry_1 = TeamFieldEntries.query.filter_by(field_id=field1.id).first()
+            field_entry_2 = TeamFieldEntries.query.filter_by(field_id=field2.id).first()
+            assert field_entry_1.value == "CustomValue1"
+            assert field_entry_2.value == "CustomValue2"
 
             # After making the field public the user should see both fields
-            field = Fields.query.filter_by(id=1).first()
-            field.public = True
+            field1.public = True
             app.db.session.commit()
             r = user.get("/api/v1/teams/me")
             resp = r.get_json()
             assert len(resp["data"]["fields"]) == 2
 
             # Captain should be able to edit their values after it's made editable
-            field = Fields.query.filter_by(id=1).first()
-            field.editable = True
+            field1.editable = True
             app.db.session.commit()
             r = user.patch(
                 "/api/v1/teams/me",
                 json={
                     "fields": [
-                        {"field_id": 1, "value": "NewCustomValue1"},
-                        {"field_id": 2, "value": "NewCustomValue2"},
+                        {"field_id": field1.id, "value": "NewCustomValue1"},
+                        {"field_id": field2.id, "value": "NewCustomValue2"},
                     ]
                 },
             )
             print(r.get_json())
             assert r.status_code == 200
-            assert (
-                TeamFieldEntries.query.filter_by(id=1).first().value
-                == "NewCustomValue1"
-            )
-            assert (
-                TeamFieldEntries.query.filter_by(id=2).first().value
-                == "NewCustomValue2"
-            )
+            field_entry_1 = TeamFieldEntries.query.filter_by(field_id=field1.id).first()
+            field_entry_2 = TeamFieldEntries.query.filter_by(field_id=field2.id).first()
+            assert field_entry_1.value == "NewCustomValue1"
+            assert field_entry_2.value == "NewCustomValue2"
     destroy_ctfd(app)
 
 

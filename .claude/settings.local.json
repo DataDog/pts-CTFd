@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(gh run list:*)",
+      "Bash(gh run view:*)",
+      "Bash(gh api:*)",
+      "Bash(pip install:*)",
+      "Bash(make lint:*)",
+      "Bash(corepack enable)",
+      "Bash(find:*)",
+      "Bash(npx eslint:*)",
+      "Bash(ruff check:*)",
+      "Bash(pytest:*)",
+      "Bash(grep:*)",
+      "Bash(mv:*)"
+    ],
+    "deny": []
+  }
+}

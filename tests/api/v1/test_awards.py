@@ -78,7 +78,7 @@ def test_api_awards_post_admin_teams_mode():
             assert "team_id" in r.get_json()["errors"].keys()
             assert r.get_json()["success"] is False
 
-            gen_team(app.db)
+            team = gen_team(app.db)
             r = client.post(
                 "/api/v1/awards",
                 json={
@@ -93,9 +93,9 @@ def test_api_awards_post_admin_teams_mode():
             # This should pass as we should auto determine the user's team
             assert r.status_code == 200
             assert r.get_json()["success"] is True
-            award = Awards.query.filter_by(id=1).first()
+            award = Awards.query.filter_by(name="Name").first()
             assert award.user_id == 3
-            assert award.team_id == 1
+            assert award.team_id == team.id
     destroy_ctfd(app)
 
 
