@@ -15,7 +15,7 @@ dataset==1.5.2
 cmarkgfm==2022.10.27
 redis==4.5.5
 gevent==23.9.1
-python-dotenv==0.13.0
+python-dotenv==1.2.2
 flask-restx==1.1.0
 flask-marshmallow==0.10.1
 marshmallow-sqlalchemy==0.17.0
