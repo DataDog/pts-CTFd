@@ -34,8 +34,8 @@ WORKDIR /opt/CTFd
 # hadolint ignore=DL3008
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-        libffi7 \
-        libssl1.1 \
+        libffi8 \
+        libssl3 \
         libev4 \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
