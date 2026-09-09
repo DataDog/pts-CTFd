@@ -1,4 +1,4 @@
-FROM python:3.9-slim-bullseye as build
+FROM python:3.9-slim-bookworm as build
 
 WORKDIR /opt/CTFd
 
@@ -28,14 +28,14 @@ RUN pip install --no-cache-dir -r requirements.txt \
     done;
 
 
-FROM python:3.9-slim-bullseye as release
+FROM python:3.9-slim-bookworm as release
 WORKDIR /opt/CTFd
 
 # hadolint ignore=DL3008
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-        libffi7 \
-        libssl1.1 \
+        libffi8 \
+        libssl3 \
         libev4 \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
